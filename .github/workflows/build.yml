@@ -1,0 +1,24 @@
+name: Mac checks
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  mac:
+    strategy:
+      matrix:
+        os: [macos-15, macos-15-intel]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Recognition and production policies
+        run: zsh scripts/check.sh
+      - name: Universal packaging
+        run: python3 scripts/build.py
+      - name: Archive development artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ScreenQR-${{ matrix.os }}
+          path: |
+            dist/*.zip
+            dist/*.dmg
+            dist/*.sha256

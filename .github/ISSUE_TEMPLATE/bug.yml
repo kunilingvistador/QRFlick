@@ -1,0 +1,22 @@
+name: Bug / Ошибка
+description: Report a reproducible problem without private QR data.
+title: '[Bug] '
+body:
+  - type: textarea
+    attributes:
+      label: What happened / Что произошло
+      description: Describe steps and expected behavior. Redact personal data and secrets from screenshots.
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: ScreenQR version / Версия
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: macOS version and Mac model / Версия macOS и модель Mac
+  - type: textarea
+    attributes:
+      label: Displays and permissions / Мониторы и разрешения
+      description: Mention external displays, scale, fullscreen mode and screen recording status if relevant.
