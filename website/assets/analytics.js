@@ -50,7 +50,7 @@
     const link = event.target.closest('a[href]');
     if (!enabled || !link) return;
     const url = new URL(link.href);
-    if (url.hostname === 'github.com' && url.pathname.startsWith('/kunilingvistador/ScreenQR/releases/download/')) {
+    if (url.hostname === 'github.com' && url.pathname.startsWith('/kunilingvistador/QRFlick/releases/download/')) {
       const format = url.pathname.endsWith('.dmg') ? 'dmg' : url.pathname.endsWith('.zip') ? 'zip' : null;
       if (format) gtag('event', 'download_click', {file_format: format, language: ru ? 'ru' : 'en', transport_type: 'beacon'});
     }
