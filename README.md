@@ -1,8 +1,8 @@
-# ScreenQR
+# QR Flick
 
 **Scan QR codes directly from your Mac screen.** Click the menu bar icon, select a region, inspect the address, then open it in your default browser or copy it.
 
-[Website](https://kunilingvistador.github.io/ScreenQR/) · [Download](https://github.com/kunilingvistador/ScreenQR/releases) · [Install and permissions](https://kunilingvistador.github.io/ScreenQR/en/guides/screen-recording-permission/)
+[Website](https://kunilingvistador.github.io/QRFlick/) · [Download](https://github.com/kunilingvistador/QRFlick/releases) · [Install and permissions](https://kunilingvistador.github.io/QRFlick/en/guides/screen-recording-permission/)
 
 ## Everyday use
 
@@ -13,17 +13,19 @@
 - Image-file drop, image files and clipboard images are secondary inputs.
 - QR payloads such as text, Wi-Fi and contacts can be copied; only HTTP(S) URLs without embedded credentials get a browser button.
 
+The application is named **QR Flick**. The bundle identifier remains `com.screenqr.app` to preserve existing settings and screen permission.
+
 ## Install
 
-macOS 14+, Apple Silicon or Intel. Download the DMG, drag ScreenQR into Applications and launch that copy. For screen scanning, allow Screen Recording when requested and restart if macOS asks. Image files and clipboard do not require screen permission.
+macOS 14+, Apple Silicon or Intel. Download the DMG, drag QR Flick into Applications and launch that copy. For screen scanning, allow Screen Recording when requested and restart if macOS asks. Image files and clipboard do not require screen permission.
 
-**0.2.0 is an ad-hoc signed beta, without Developer ID or Apple notarization.** macOS may block the first launch. Verify the release source and checksum; use the normal macOS confirmation only if you trust this build. Do not disable system protections globally. Intel is cross-compiled; live testing on an Intel Mac is still needed. See [validation and remaining limits](docs/VALIDATION.md).
+**0.3.0 is an ad-hoc signed beta, without Developer ID or Apple notarization.** macOS may block the first launch. Verify the release source and checksum; use the normal macOS confirmation only if you trust this build. Do not disable system protections globally. Intel is cross-compiled; live testing on an Intel Mac is still needed. See [validation and remaining limits](docs/VALIDATION.md).
 
 ## Privacy
 
-Apple Vision performs recognition on-device. During a screen scan, the app temporarily captures connected displays in memory, excludes its own windows, then recognizes QR codes inside the selected region. Screen Recording permission permits more than that region. The app saves no screenshot files or scan history, records no audio and has no telemetry. Copying sends text to the system clipboard; opening a link sends it to your default browser. The destination website receives a normal browser request. ScreenQR does not verify website reputation.
+Apple Vision performs recognition on-device. During a screen scan, the app temporarily captures connected displays in memory, excludes its own windows, then recognizes QR codes inside the selected region. Screen Recording permission permits more than that region. The app saves no screenshot files or scan history, records no audio and has no telemetry. Copying sends text to the system clipboard; opening a link sends it to your default browser. The destination website receives a normal browser request. QR Flick does not verify website reputation.
 
-Hotkey and result-display preferences are stored locally. GitHub hosts the website and downloads under its own privacy policy. The website has no analytics scripts or custom cookies. Never attach private QR contents to public issues.
+Hotkey and result-display preferences are stored locally. GitHub hosts the website and downloads under its own privacy policy. The website includes opt-in Google Analytics for page views and download clicks. QR contents and screenshots are never sent. Never attach private QR contents to public issues.
 
 ## Build and check
 
@@ -43,7 +45,7 @@ The native interface follows the first preferred macOS language: Russian or Engl
 
 ## По-русски
 
-ScreenQR читает QR прямо с экрана Mac: нажмите значок в строке меню, выделите код, проверьте адрес и откройте ссылку. Скриншот сохранять не нужно. Горячая клавиша назначается в настройках и по умолчанию выключена. Ссылка никогда не открывается автоматически.
+QR Flick читает QR прямо с экрана Mac: нажмите значок в строке меню, выделите код, проверьте адрес и откройте ссылку. Скриншот сохранять не нужно. Горячая клавиша назначается в настройках и по умолчанию выключена. Ссылка никогда не открывается автоматически.
 
 Бесплатная открытая бета для macOS 14+, Apple Silicon и Intel. Для сканирования нужен доступ к записи экрана. Распознавание локальное, история не сохраняется. Текущая сборка без нотариализации Apple; подробности установки и оставшихся проверок указаны выше.
 

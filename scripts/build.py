@@ -3,10 +3,10 @@
 import argparse, hashlib, os, plistlib, shutil, subprocess, tempfile
 from pathlib import Path
 parser=argparse.ArgumentParser(); parser.add_argument('--native',action='store_true'); args=parser.parse_args()
-root=Path(__file__).resolve().parents[1]; version='0.2.0'; build='4'; dist=root/'dist'; dist.mkdir(exist_ok=True)
+root=Path(__file__).resolve().parents[1]; version='0.3.0'; build='6'; dist=root/'dist'; dist.mkdir(exist_ok=True)
 def run(*command, **kw): subprocess.run(command,check=True,**kw)
 with tempfile.TemporaryDirectory(prefix='ScreenQR-package-') as temporary:
- stage=Path(temporary); app=stage/'ScreenQR.app'; binary=app/'Contents/MacOS'; resources=app/'Contents/Resources'; binary.mkdir(parents=True);resources.mkdir()
+ stage=Path(temporary); app=stage/'QR Flick.app'; binary=app/'Contents/MacOS'; resources=app/'Contents/Resources'; binary.mkdir(parents=True);resources.mkdir()
  env=dict(os.environ,CLANG_MODULE_CACHE_PATH=str(stage/'clang'),SWIFTPM_MODULECACHE_OVERRIDE=str(stage/'modules'))
  arches=[os.uname().machine] if args.native else ['arm64','x86_64']; binaries=[]
  for arch in arches:
@@ -17,19 +17,19 @@ with tempfile.TemporaryDirectory(prefix='ScreenQR-package-') as temporary:
  else: shutil.copy2(binaries[0],binary/'ScreenQR')
  run('swift',str(root/'scripts/make-app-icon.swift'),str(stage/'AppIcon.iconset'),env=env)
  run('iconutil','-c','icns',str(stage/'AppIcon.iconset'),'-o',str(resources/'AppIcon.icns'))
- metadata={'CFBundleExecutable':'ScreenQR','CFBundleIdentifier':'com.screenqr.app','CFBundleName':'ScreenQR','CFBundleDisplayName':'ScreenQR','CFBundlePackageType':'APPL','CFBundleShortVersionString':version,'CFBundleVersion':build,'CFBundleIconFile':'AppIcon','LSMinimumSystemVersion':'14.0','LSUIElement':True,'NSHighResolutionCapable':True,'CFBundleDevelopmentRegion':'en','CFBundleLocalizations':['en','ru']}
+ metadata={'CFBundleExecutable':'ScreenQR','CFBundleIdentifier':'com.screenqr.app','CFBundleName':'QR Flick','CFBundleDisplayName':'QR Flick','CFBundlePackageType':'APPL','CFBundleShortVersionString':version,'CFBundleVersion':build,'CFBundleIconFile':'AppIcon','LSMinimumSystemVersion':'14.0','LSUIElement':True,'NSHighResolutionCapable':True,'CFBundleDevelopmentRegion':'en','CFBundleLocalizations':['en','ru']}
  (app/'Contents/Info.plist').write_bytes(plistlib.dumps(metadata))
  identity=os.environ.get('SCREENQR_SIGN_IDENTITY')
  run('xattr','-cr',str(app))
  if identity: run('codesign','--force','--options','runtime','--timestamp','--sign',identity,str(app))
  else: run('codesign','--force','--sign','-','--requirements','=designated => identifier "com.screenqr.app"',str(app))
  run('codesign','--verify','--deep','--strict',str(app));run('plutil','-lint',str(app/'Contents/Info.plist'))
- filename=f'ScreenQR-{version}-macos';archive=dist/(filename+'.zip')
+ filename=f'QRFlick-{version}-macos';archive=dist/(filename+'.zip')
  run('ditto','--noextattr','--norsrc','-c','-k','--keepParent',str(app),str(archive));run('unzip','-tq',str(archive))
- dmgroot=stage/'dmg';dmgroot.mkdir();run('ditto','--noextattr',str(app),str(dmgroot/'ScreenQR.app'));(dmgroot/'Applications').symlink_to('/Applications')
+ dmgroot=stage/'dmg';dmgroot.mkdir();run('ditto','--noextattr',str(app),str(dmgroot/'QR Flick.app'));(dmgroot/'Applications').symlink_to('/Applications')
  dmg=dist/(filename+'.dmg');dmg.unlink(missing_ok=True)
- run('hdiutil','create','-volname','ScreenQR','-srcfolder',str(dmgroot),'-format','UDZO',str(dmg))
- target=dist/'ScreenQR.app'
+ run('hdiutil','create','-volname','QR Flick','-srcfolder',str(dmgroot),'-format','UDZO',str(dmg))
+ target=dist/'QR Flick.app'
  if target.exists(): shutil.rmtree(target)
  run('ditto','--noextattr',str(app),str(target));run('xattr','-cr',str(target))
  checks=dist/(filename+'.sha256');checks.write_text(''.join(f'{hashlib.sha256(path.read_bytes()).hexdigest()}  {path.name}\n' for path in [archive,dmg]))

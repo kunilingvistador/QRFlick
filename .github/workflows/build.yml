@@ -17,7 +17,7 @@ jobs:
       - name: Archive development artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ScreenQR-${{ matrix.os }}
+          name: QRFlick-${{ matrix.os }}
           path: |
             dist/*.zip
             dist/*.dmg

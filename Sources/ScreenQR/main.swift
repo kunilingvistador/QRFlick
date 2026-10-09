@@ -19,6 +19,7 @@ final class App: NSObject, NSApplicationDelegate, NSWindowDelegate {
     var lastSelectionPoint: NSPoint?
     var keyMonitor: Any?
     var shortcutMonitor: Any?
+    weak var returnWindow: NSWindow?
     var capturing = false
     var busy = false
     var results: [ResultItem] = []
@@ -28,7 +29,7 @@ final class App: NSObject, NSApplicationDelegate, NSWindowDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
         let menu = NSMenu(); let root = NSMenuItem(); menu.addItem(root); root.submenu = NSMenu()
-        for (title, action, key) in [(L("Сканировать экран"), #selector(scan), ""), (L("Настройки…"), #selector(settings), ","), (L("Из буфера обмена"), #selector(paste), ""), (L("Завершить ScreenQR"), #selector(quit), "q")] { let item = NSMenuItem(title: L(title), action: action, keyEquivalent: key); item.target = self; root.submenu?.addItem(item) }; NSApp.mainMenu = menu
+        for (title, action, key) in [(L("Сканировать экран"), #selector(scan), ""), (L("Настройки…"), #selector(settings), ","), (L("Из буфера обмена"), #selector(paste), ""), (L("Завершить QR Flick"), #selector(quit), "q")] { let item = NSMenuItem(title: L(title), action: action, keyEquivalent: key); item.target = self; root.submenu?.addItem(item) }; NSApp.mainMenu = menu
         status = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         status.button?.image = NSImage(systemSymbolName: "qrcode.viewfinder", accessibilityDescription: L("Сканировать QR-код"))
         status.button?.toolTip = L("Сканировать QR-код")
@@ -50,7 +51,7 @@ final class App: NSObject, NSApplicationDelegate, NSWindowDelegate {
     @objc func statusClick() {
         if NSApp.currentEvent?.type == .rightMouseUp {
             let menu = NSMenu()
-            for (title, action) in [(L("Сканировать экран"), #selector(scan)), (L("Из буфера обмена"), #selector(paste)), (L("Открыть изображение…"), #selector(openFile)), (L("Настройки…"), #selector(settings)), (L("Выход"), #selector(quit))] {
+            for (title, action) in [(L("Сканировать экран"), #selector(scan)), (L("Из буфера обмена"), #selector(paste)), (L("Открыть изображение…"), #selector(openFile)), (L("Настройки…"), #selector(settings)), (L("Как пользоваться…"), #selector(welcome)), (L("Выход"), #selector(quit))] {
                 let item = NSMenuItem(title: L(title), action: action, keyEquivalent: ""); item.target = self; menu.addItem(item)
             }
             status.menu = menu; status.button?.performClick(nil); status.menu = nil
@@ -80,6 +81,7 @@ final class App: NSObject, NSApplicationDelegate, NSWindowDelegate {
             return array.contains { ($0[kHISymbolicHotKeyEnabled as String] as? NSNumber)?.boolValue == true && ($0[kHISymbolicHotKeyCode as String] as? NSNumber)?.uint32Value == code && ($0[kHISymbolicHotKeyModifiers as String] as? NSNumber)?.uint32Value == modifiers }
         }; return false
     }
+    @objc func welcome() { showWelcome() }
     @objc func quit() { NSApp.terminate(nil) }
     func message(_ title: String, _ detail: String) {
         NSApp.activate(ignoringOtherApps: true)
@@ -88,7 +90,7 @@ final class App: NSObject, NSApplicationDelegate, NSWindowDelegate {
     func showWelcome() {
         UserDefaults.standard.set(true, forKey: "welcomed")
         welcomeWindow?.close()
-        let window = makeWindow(L("ScreenQR — QR-коды с экрана"), width: 490, height: 420)
+        let window = makeWindow(L("QR Flick — QR-коды с экрана"), width: 490, height: 420)
         let stack = makeStack(window)
         let icon = NSImageView(); icon.image = NSImage(named: NSImage.applicationIconName); icon.imageScaling = .scaleProportionallyUpOrDown; icon.widthAnchor.constraint(equalToConstant: 64).isActive = true; icon.heightAnchor.constraint(equalToConstant: 64).isActive = true; stack.addArrangedSubview(icon)
         addLabel(L("QR уже на компьютере?"), to: stack, size: 23)
@@ -101,6 +103,7 @@ final class App: NSObject, NSApplicationDelegate, NSWindowDelegate {
     }
     @objc func scan() {
         guard !capturing && !busy else { return }
+        returnWindow = NSApp.keyWindow ?? [resultWindow, welcomeWindow, settingsWindow].compactMap { $0 }.first { $0.isVisible }
         capturing = true; resultWindow?.orderOut(nil); welcomeWindow?.orderOut(nil); settingsWindow?.orderOut(nil)
         Task { @MainActor in
             do {
@@ -115,7 +118,7 @@ final class App: NSObject, NSApplicationDelegate, NSWindowDelegate {
                     let image = try await SCScreenshotManager.captureImage(contentFilter: filter, configuration: config)
                     snapshots.append((screen, image))
                 }
-                if snapshots.isEmpty { throw NSError(domain: "ScreenQR", code: 1) }
+                if snapshots.isEmpty { throw NSError(domain: "QR Flick", code: 1) }
                 let activePoint = NSEvent.mouseLocation
                 var activePanel: NSWindow?
                 for (screen, image) in snapshots {
@@ -131,17 +134,21 @@ final class App: NSObject, NSApplicationDelegate, NSWindowDelegate {
                 cancelCapture()
                 NSApp.activate(ignoringOtherApps: true)
                 let alert = NSAlert(); alert.messageText = L("Не удалось получить снимок экрана")
-                alert.informativeText = L("Разрешите ScreenQR запись экрана в Системных настройках. Приложение распознаёт QR локально, не записывает звук и не сохраняет снимки. После выдачи доступа перезапустите ScreenQR.")
+                alert.informativeText = L("Разрешите QR Flick запись экрана в Системных настройках. Приложение распознаёт QR локально, не записывает звук и не сохраняет снимки. После выдачи доступа перезапустите QR Flick.")
                 alert.addButton(withTitle: L("Открыть настройки доступа")); alert.addButton(withTitle: L("Позже"))
                 if alert.runModal() == .alertFirstButtonReturn, let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture") { NSWorkspace.shared.open(url) }
             }
         }
     }
-    func cancelCapture() { for panel in panels { panel.orderOut(nil) }; panels.removeAll(); capturing = false }
-    func selected(_ image: CGImage) { UserDefaults.standard.set(true, forKey: "completedFirstScan"); lastSelectionPoint = NSEvent.mouseLocation; cancelCapture(); decode(image) }
+    func cancelCapture(restoreWindow: Bool = true) { for panel in panels { panel.orderOut(nil) }; panels.removeAll(); capturing = false; if restoreWindow { returnWindow?.makeKeyAndOrderFront(nil) }; returnWindow = nil }
+    func selected(_ image: CGImage) { UserDefaults.standard.set(true, forKey: "completedFirstScan"); lastSelectionPoint = NSEvent.mouseLocation; cancelCapture(restoreWindow: false); decode(image) }
     @objc func paste() {
         guard !capturing && !busy else { return }; lastSelectionPoint = nil
-        guard let image = NSImage(pasteboard: .general), let cg = image.cgImage(forProposedRect: nil, context: nil, hints: nil) else { message(L("В буфере нет изображения"), L("Скопируйте картинку с QR-кодом или выделите код прямо на экране.")); return }
+        guard let image = NSImage(pasteboard: .general), let cg = image.cgImage(forProposedRect: nil, context: nil, hints: nil) else {
+            NSApp.activate(ignoringOtherApps: true)
+            let alert = NSAlert(); alert.messageText = L("В буфере нет изображения"); alert.informativeText = L("Скопируйте картинку с QR-кодом или выделите код прямо на экране."); alert.addButton(withTitle: L("Сканировать экран")); alert.addButton(withTitle: L("Закрыть"))
+            if alert.runModal() == .alertFirstButtonReturn { scan() }; return
+        }
         decode(cg)
     }
     @objc func openFile() {
@@ -227,6 +234,7 @@ final class App: NSObject, NSApplicationDelegate, NSWindowDelegate {
             stack.addArrangedSubview(row)
             let line = NSBox(); line.boxType = .separator; stack.addArrangedSubview(line)
         }
+        addButton(L("Сканировать ещё один QR"), #selector(scan), to: stack)
         window.minSize = NSSize(width: 460, height: 180)
         window.contentView?.layoutSubtreeIfNeeded()
         let available = (NSScreen.main?.visibleFrame.height ?? 800) - 90
@@ -239,17 +247,30 @@ final class App: NSObject, NSApplicationDelegate, NSWindowDelegate {
     @objc func copyResult(_ sender: NSButton) { guard results.indices.contains(sender.tag) else { return }; NSPasteboard.general.clearContents(); NSPasteboard.general.setString(results[sender.tag].text, forType: .string); sender.title = L("Скопировано ✓") }
     @objc func settings() {
         settingsWindow?.close()
-        let window = makeWindow(L("Настройки ScreenQR"), width: 430, height: 490); let stack = makeStack(window)
+        let window = makeWindow(L("Настройки QR Flick"), width: 470, height: 560); let stack = makeStack(window)
+        addLabel(L("Результат сканирования"), to: stack, size: 17)
         compact.state = UserDefaults.standard.bool(forKey: "compact") ? .on : .off; compact.target = self; compact.action = #selector(saveCompact); stack.addArrangedSubview(compact)
-        addLabel(L("Горячая клавиша"), to: stack)
-        addLabel(L("Минимум два модификатора, включая ⌘ или ⌃. Esc — отмена записи."), to: stack)
+        addLabel(L("Горячая клавиша"), to: stack, size: 17)
+        addLabel(L("Зажмите, например, Control и Shift, затем нажмите букву. Нужны две служебные клавиши, одна из них — Command или Control. Escape отменяет запись."), to: stack)
         shortcutSummary.stringValue = UserDefaults.standard.string(forKey: "shortcutLabel") ?? L("Не назначена")
         stack.addArrangedSubview(shortcutSummary)
+        if let code = UserDefaults.standard.object(forKey: "keyCode") as? Int, code >= 0 {
+            let label = UserDefaults.standard.string(forKey: "shortcutLabel") ?? ""
+            let readable = label.replacingOccurrences(of: "⌃", with: "Control + ").replacingOccurrences(of: "⌥", with: "Option + ").replacingOccurrences(of: "⇧", with: "Shift + ").replacingOccurrences(of: "⌘", with: "Command + ")
+            addLabel(readable, to: stack)
+        }
         addButton(L("Назначить своё сочетание…"), #selector(recordShortcut), to: stack)
         addButton(L("Отключить сочетание"), #selector(disableShortcut), to: stack)
         let login = NSButton(checkboxWithTitle: L("Запускать при входе в систему"), target: self, action: #selector(toggleLogin)); login.state = SMAppService.mainApp.status == .enabled ? .on : .off; stack.addArrangedSubview(login)
         addLabel(L("Снимки и результаты не сохраняются на диск. Ссылки открываются только по вашему нажатию."), to: stack)
-        addButton(L("Открыть изображение / перетащить файл"), #selector(openFile), to: stack); stack.addArrangedSubview(DropView(app: self))
+        addLabel(L("Изображения и буфер обмена"), to: stack, size: 17)
+        let row = NSStackView(); row.spacing = 10
+        let file = NSButton(title: L("Открыть изображение…"), target: self, action: #selector(openFile)); row.addArrangedSubview(file)
+        let clipboard = NSButton(title: L("Из буфера обмена"), target: self, action: #selector(paste)); row.addArrangedSubview(clipboard)
+        stack.addArrangedSubview(row); stack.addArrangedSubview(DropView(app: self))
+        window.contentView?.layoutSubtreeIfNeeded()
+        window.setContentSize(NSSize(width: 470, height: max(560, stack.fittingSize.height + 44)))
+        window.minSize = window.frame.size
         settingsWindow = window; window.makeKeyAndOrderFront(nil); NSApp.activate(ignoringOtherApps: true)
     }
     @objc func recordShortcut(_ sender: NSButton) {
@@ -257,7 +278,7 @@ final class App: NSObject, NSApplicationDelegate, NSWindowDelegate {
         sender.title = L("Нажмите сочетание · Esc — отмена")
         keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self, weak sender] event in
             guard let self else { return event }
-            if event.keyCode == 53 { if let monitor = self.keyMonitor { NSEvent.removeMonitor(monitor) }; self.keyMonitor = nil; sender?.title = L("Записать своё сочетание…"); return nil }
+            if event.keyCode == 53 { if let monitor = self.keyMonitor { NSEvent.removeMonitor(monitor) }; self.keyMonitor = nil; sender?.title = L("Назначить своё сочетание…"); return nil }
             let flags = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
             if event.keyCode == UInt16(kVK_ANSI_Q) || event.keyCode >= 120 { sender?.title = L("Это сочетание недоступно. Выберите другое"); return nil }
             guard flags.contains(.command) || flags.contains(.control), flags.intersection([.command, .control, .option, .shift]).rawValue.nonzeroBitCount >= 2 else { return nil }

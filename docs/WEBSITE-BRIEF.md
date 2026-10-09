@@ -1,4 +1,4 @@
-# ScreenQR website brief — 7 October 2026
+# QR Flick website brief — 7 October 2026
 
 ## Product promise
 
@@ -40,9 +40,9 @@ Sources: https://developers.google.com/search/docs/fundamentals/seo-starter-guid
 
 ## ProfileDock cross-linking
 
-One short Related Mac utilities section on both homepages, with a human-readable description. ScreenQR: "Work with several Chrome windows? ProfileDock gives them separate Dock shortcuts." ProfileDock: "QR code already on your screen? ScreenQR lets you read it on your Mac." Add contextual guide links only where they help the task. No mass footer keyword links and no assertion that reciprocal links automatically increase ranking.
+One short Related Mac utilities section on both homepages, with a human-readable description. QR Flick: "Work with several Chrome windows? ProfileDock gives them separate Dock shortcuts." ProfileDock: "QR code already on your screen? QR Flick lets you read it on your Mac." Add contextual guide links only where they help the task. No mass footer keyword links and no assertion that reciprocal links automatically increase ranking.
 
-ScreenQR can link to the existing ProfileDock site now. Add the reverse link only once the real ScreenQR URL is deployed and verified. Existing ProfileDock site not modified yet.
+QR Flick can link to the existing ProfileDock site now. Add the reverse link only once the real QR Flick URL is deployed and verified. Existing ProfileDock site not modified yet.
 
 ## Publication gates
 

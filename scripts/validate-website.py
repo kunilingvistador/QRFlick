@@ -26,15 +26,15 @@ class Page(HTMLParser):
 pages={};titles=set()
 for path in root.rglob('index.html'):
  p=Page();p.feed(path.read_text());rel=path.relative_to(root).parent.as_posix();rel='' if rel=='.' else rel+'/'
- expected='https://kunilingvistador.github.io/ScreenQR/'+rel
+ expected='https://kunilingvistador.github.io/QRFlick/'+rel
  assert p.canonical==[expected],(path,p.canonical)
  assert p.lang in ['ru','en'] and p.headings==1 and p.description and p.schema,path
  assert p.title not in titles,path;titles.add(p.title)
  assert set(p.alternates)=={'en','ru'} and p.alternates[p.lang]==expected,path
  assert p.schema[0]['url']==expected,path
  for link in p.links:
-  if link.startswith('https://kunilingvistador.github.io/ScreenQR/'):
-   destination=unquote(urlparse(link).path[len('/ScreenQR/'):]);target=root/destination
+  if link.startswith('https://kunilingvistador.github.io/QRFlick/'):
+   destination=unquote(urlparse(link).path[len('/QRFlick/'):]);target=root/destination
    if destination.endswith('/') or not destination:target=target/'index.html'
    assert target.is_file(),(path,link)
  pages[expected]=p
