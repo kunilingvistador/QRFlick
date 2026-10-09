@@ -15,7 +15,7 @@
 
 ## Limits and remaining hardware checks
 
-Physical global keyboard activation from a different app remains unverified; the user requested clarification about the shortcut rather than confirming activation. Targeted synthetic keyboard input is not equivalent to that hardware check. Intel is cross-compiled, not live-tested on an Intel Mac. Additional macOS versions, different monitor scales, fullscreen/Spaces/Stage Manager and login startup require real-device checks. Clipboard/drop and image orientation need integration checks on representative images. Accessibility has native controls and labels but full VoiceOver testing is outstanding.
+Physical global keyboard activation from a different app remains unverified; the user requested clarification about the shortcut rather than confirming activation. Targeted synthetic keyboard input is not equivalent to that hardware check. Automated checks and universal packaging also passed on the macos-15-intel CI runner. Interactive UI has not been tested on an Intel Mac. Additional macOS versions, different monitor scales, fullscreen/Spaces/Stage Manager and login startup require real-device checks. Clipboard/drop and image orientation need integration checks on representative images. Accessibility has native controls and labels but full VoiceOver testing is outstanding.
 
 The app takes temporary screenshots of connected displays before selection. QR recognition is limited to the selected area; the OS screen permission is broader. No screenshot files or history are written. Links are not scanned for website reputation.
 
@@ -31,4 +31,12 @@ The site was checked in the in-app browser at actual widths 853 and 360 pixels: 
 
 ## Release status
 
-Release artifacts and website are being prepared. Publication and remote download verification are separate steps and will be recorded only after success. Public distribution remains explicitly beta until Developer ID signing/notarization and wider hardware QA.
+Published prerelease: https://github.com/kunilingvistador/ScreenQR/releases/tag/v0.2.0-beta
+
+Published website: https://kunilingvistador.github.io/ScreenQR/ (Russian and English). All 12 canonical pages returned HTTP 200; an intentionally missing page returned 404. ProfileDock Russian and English homepages contain the published ScreenQR link; ScreenQR links back to ProfileDock.
+
+Mac checks CI run 37949226323 passed on macos-15 and macos-15-intel. Website deployment run 37949226061 succeeded after enabling Pages. ProfileDock related-site deployment run 37950040079 succeeded.
+
+Downloaded public ZIP and DMG matched published SHA-256 checksums. ZIP integrity, extracted app signature integrity, both binary architectures and DMG verification passed independently of local build files.
+
+Public distribution remains explicitly beta until Developer ID signing/notarization and wider hardware QA.
